@@ -348,6 +348,16 @@ minetest.register_entity("minekart:kart", {
                 if player_attach then
                     if player_attach == self.object then is_attached = true end
                 end
+
+                --reload fuel at refuel point
+                ------------------------------
+                if self._energy < 0.90 then
+                    local speed = minekart.get_hipotenuse_value(vector.new(), self._lastvelocity)
+                    local pos = self.object:get_pos()
+                    if minetest.find_node_near(pos, 5, {"checkpoints:refuel"}) ~= nil and self._engine_running == false and speed <= 0.1 then
+                        minekart_load_fuel(self, self.driver_name, true)
+                    end
+                end
             end
         end
 
@@ -498,21 +508,13 @@ minetest.register_entity("minekart:kart", {
 
         --refuel procedure
         --[[
-        refuel works in 2 situations:
-        1- if my car doesn't have a race_id, ok, punch it anywhere with bio fuel while player attached and ok
-        2- if it have a race_id, you must stop near a "checkpoints:refuel" node to punch with the biofuel
+        refuel works it car is stopped and engine is off
         ]]--
         local velocity = self.object:get_velocity()
         local speed = minekart.get_hipotenuse_value(vector.new(), velocity)
         if is_attached == true and item_name == "biofuel:biofuel" and self._engine_running == false and speed <= 0.1 then
             local pos = self.object:get_pos()
-            if minetest.find_node_near(pos, 5, {"checkpoints:refuel"}) ~= nil then
-                minekart_load_fuel(self, puncher:get_player_name())
-            else
-                if self._race_id == "" then
-                    minekart_load_fuel(self, puncher:get_player_name())
-                end
-            end
+            minekart_load_fuel(self, puncher:get_player_name())
         end
         -- end refuel
 
