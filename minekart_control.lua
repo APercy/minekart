@@ -85,16 +85,26 @@ function minekart.kart_control(self, dtime, hull_direction, longit_speed, longit
 	    end
 
         --break
-        if math.abs(longit_speed) > 0 and ctrl.down then
-            acc = -5 / (longit_speed / 2) -- lets set a brake efficience based on speed
-        end
+        if ctrl.down then
+            if math.abs(longit_speed) > 0 then
+                acc = -5 / (longit_speed / 2) -- lets set a brake efficience based on speed
+            end
+        
+            --total stop
+            --wheel break
+            if longit_speed >= 0.1 then
+                acc = -1
+            end
+            if longit_speed <= -0.1 then
+                acc = 1
+            end
 
-        --total stop
-        if math.abs(longit_speed) <= 0.1 and ctrl.down then
-            -- do not like it here, but worked better
-            acc = 0
-            self.object:set_acceleration(zero)
-            self.object:set_velocity(vector.new())
+            if math.abs(longit_speed) <= 0.1 then
+                -- do not like it here, but worked better
+                acc = 0
+                --self.object:set_acceleration(zero)
+                self.object:set_velocity(vector.new())
+            end
         end
 
         if acc then retval_accel=vector.add(accel,vector.multiply(hull_direction,acc)) end
