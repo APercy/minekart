@@ -2,7 +2,7 @@
 
 minekart.karttest_last_time_command = 0
 minekart.vector_up = vector.new(0, 1, 0)
-minekart.max_acc_factor = 8.5
+minekart.max_acc_factor = 8
 minekart.max_speed = 25
 
 function minekart.check_road_is_ok(obj)
@@ -90,16 +90,16 @@ function minekart.kart_control(self, dtime, hull_direction, longit_speed, longit
         end
 
         --total stop
-        if longit_speed <= 0.1 and ctrl.down then
+        if longit_speed <= 0.01 and ctrl.down then
             -- do not like it here, but worked better
             acc = 0
-            self.object:set_velocity(zero)
-            --self.object:set_acceleration(zero)
+            --self.object:set_velocity(zero)
+            self.object:set_acceleration(zero)
         end
 
         if acc then retval_accel=vector.add(accel,vector.multiply(hull_direction,acc)) end
 
-		if ctrl.jump then
+		if ctrl.aux1 then
             --sets the engine running - but sets a delay also, cause keypress
             if minekart.karttest_last_time_command > 0.3 then
                 minekart.karttest_last_time_command = 0
@@ -116,7 +116,7 @@ function minekart.kart_control(self, dtime, hull_direction, longit_speed, longit
 				    self._engine_running = true
 		            -- sound and animation
 	                self.sound_handle = minetest.sound_play({name = "engine"},
-			                {object = self.object, gain = 2.0, max_hear_distance = 32, loop = true,})
+			                {object = self.object, gain = 2.0, pitch = 1.0, max_hear_distance = 32, loop = true,})
                     --self.engine:set_animation_frame_speed(30)
 			    end
             end

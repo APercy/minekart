@@ -32,6 +32,7 @@ minekart.colors ={
 
 dofile(minetest.get_modpath("minekart") .. DIR_DELIM .. "minekart_control.lua")
 dofile(minetest.get_modpath("minekart") .. DIR_DELIM .. "minekart_fuel_management.lua")
+dofile(minetest.get_modpath("minekart") .. DIR_DELIM .. "minekart_custom_physics.lua")
 
 --
 -- helpers and co.
@@ -227,14 +228,17 @@ minetest.register_entity("minekart:kart", {
 	    mesh = "kart_body.b3d",
         textures = {"kart_black.png", "kart_painting.png", "kart_painting.png", "kart_red.png", "kart_black.png", "kart_white.png", "kart_black.png", "kart_black.png", "kart_black.png", "kart_black.png", "kart_metal.png", "kart_black.png", "kart_black.png", "kart_metal.png", "kart_black.png",  "kart_metal.png",},
     },
-    --textures = {},
+    textures = {},
 	driver_name = nil,
 	sound_handle = nil,
     owner = "",
     static_save = true,
     infotext = "A very nice kart!",
     hp = 50,
-    _lastvelocity = vector.new(),
+    buoyancy = 2,
+    physics = minekart.physics,
+    lastvelocity = vector.new(),
+    time_total = 0,
     _color = "#FFFFFF",
     _steering_angle = 0,
     _engine_running = false,
@@ -303,10 +307,11 @@ minetest.register_entity("minekart:kart", {
 
 		self.object:set_armor_groups({immortal=1})
 
-        self.object:set_acceleration(vector.multiply(minekart.vector_up, -minekart.gravity))
+        mobkit.actfunc(self, staticdata, dtime_s)
 	end,
 
 	on_step = function(self, dtime)
+        mobkit.stepfunc(self, dtime)
         --[[sound play control]]--
         minekart.last_time_collision_snd = minekart.last_time_collision_snd + dtime
         if minekart.last_time_collision_snd > 1 then minekart.last_time_collision_snd = 1 end
@@ -336,8 +341,6 @@ minetest.register_entity("minekart:kart", {
 
         local accel = vector.add(longit_drag,later_drag)
 
-        local vel = self.object:get_velocity()
-
         local player = nil
         local is_attached = false
         if self.driver_name then
@@ -352,7 +355,7 @@ minetest.register_entity("minekart:kart", {
                 --reload fuel at refuel point
                 ------------------------------
                 if self._energy < 0.90 then
-                    local speed = minekart.get_hipotenuse_value(vector.new(), self._lastvelocity)
+                    local speed = minekart.get_hipotenuse_value(vector.new(), self.lastvelocity)
                     local pos = self.object:get_pos()
                     if minetest.find_node_near(pos, 5, {"checkpoints:refuel"}) ~= nil and self._engine_running == false and speed <= 0.1 then
                         minekart_load_fuel(self, self.driver_name, true)
@@ -363,7 +366,7 @@ minetest.register_entity("minekart:kart", {
 
 		if is_attached then --and self.driver_name == self.owner then
             local curr_pos = self.object:get_pos()
-            local impact = minekart.get_hipotenuse_value(vel, self._lastvelocity)
+            local impact = minekart.get_hipotenuse_value(velocity, self.lastvelocity)
             if impact > 1 then
                 --self.damage = self.damage + impact --sum the impact value directly to damage meter
                 if minekart.last_time_collision_snd > 0.3 then
@@ -397,7 +400,7 @@ minetest.register_entity("minekart:kart", {
             end
 
             --control
-			accel = minekart.kart_control(self, dtime, hull_direction, longit_speed, longit_drag, later_drag, accel) or vel
+			accel = minekart.kart_control(self, dtime, hull_direction, longit_speed, longit_drag, later_drag, accel)
         else
             if self.sound_handle ~= nil then
 	            minetest.sound_stop(self.sound_handle)
@@ -426,9 +429,6 @@ minetest.register_entity("minekart:kart", {
 
 		newpitch = velocity.y * math.rad(6)
 
-        --add gravity accell
-        accel = vector.add(accel, vector.multiply(minekart.vector_up, -minekart.gravity)) -- * dtime))
-
         --[[
         accell correction
         under some circunstances the acceleration exceeds the max value accepted by set_acceleration and
@@ -436,10 +436,10 @@ minetest.register_entity("minekart:kart", {
         ]]--
         local max_factor = 25
         local acc_adjusted = 10
-        if accel.x > max_factor then accel.x = acc_adjusted end
+        --[[if accel.x > max_factor then accel.x = acc_adjusted end
         if accel.x < -max_factor then accel.x = -acc_adjusted end
         if accel.z > max_factor then accel.z = acc_adjusted end
-        if accel.z < -max_factor then accel.z = -acc_adjusted end
+        if accel.z < -max_factor then accel.z = -acc_adjusted end]]--
         -- end correction
 
         self.object:set_acceleration(accel)
@@ -447,7 +447,7 @@ minetest.register_entity("minekart:kart", {
 		if newyaw~=yaw or newpitch~=pitch then self.object:set_rotation({x=newpitch,y=newyaw,z=0}) end
 
         --saves last velocity for collision detection (abrupt stop)
-        self._lastvelocity = self.object:get_velocity()
+        self.lastvelocity = self.object:get_velocity()
 
         -- calculate energy consumption --
         ----------------------------------
