@@ -93,7 +93,7 @@ function minekart.kart_control(self, dtime, hull_direction, longit_speed, longit
         if math.abs(longit_speed) <= 0.1 and ctrl.down then
             -- do not like it here, but worked better
             acc = 0
-            --self.object:set_acceleration(zero)
+            self.object:set_acceleration(zero)
             self.object:set_velocity(vector.new())
         end
 
