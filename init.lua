@@ -436,10 +436,10 @@ minetest.register_entity("minekart:kart", {
         ]]--
         local max_factor = 25
         local acc_adjusted = 10
-        --[[if accel.x > max_factor then accel.x = acc_adjusted end
+        if accel.x > max_factor then accel.x = acc_adjusted end
         if accel.x < -max_factor then accel.x = -acc_adjusted end
         if accel.z > max_factor then accel.z = acc_adjusted end
-        if accel.z < -max_factor then accel.z = -acc_adjusted end]]--
+        if accel.z < -max_factor then accel.z = -acc_adjusted end
         -- end correction
 
         self.object:set_acceleration(accel)
