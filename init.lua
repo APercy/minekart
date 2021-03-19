@@ -92,6 +92,7 @@ function minekart.destroy(self, puncher)
     if self.l_wheel then self.l_wheel:remove() end
     if self.r_wheel then self.r_wheel:remove() end
     if self.steering_base then self.steering_base:remove() end
+    if self.steering_axis then self.steering_axis:remove() end
     if self.steering then self.steering:remove() end
     if self.dir_bar then self.dir_bar:remove() end
 
