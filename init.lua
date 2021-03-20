@@ -246,7 +246,7 @@ minetest.register_entity("minekart:kart", {
     _last_checkpoint = "",
     _total_laps = -1,
     _race_id = "",
-    _energy = 0.001,
+    _energy = 1,
 
     get_staticdata = function(self) -- unloaded/unloads ... is now saved
         return minetest.serialize({
@@ -548,7 +548,7 @@ minetest.register_entity("minekart:kart", {
                     -- end painting
 
 			    else -- deal damage
-				    if not self.driver and toolcaps and toolcaps.damage_groups and toolcaps.damage_groups.fleshy then
+				    if not self.driver and self.owner == name and toolcaps and toolcaps.damage_groups and toolcaps.damage_groups.fleshy then
                         self.hp = self.hp - 10
                         minetest.sound_play("collision", {
 	                        object = self.object,
@@ -632,7 +632,7 @@ minetest.register_entity("minekart:kart", {
 -- Kart
 minetest.register_craftitem("minekart:kart", {
 	description = "Kart",
-	inventory_image = "motorboat_inv.png",
+	inventory_image = "kart_inv.png",
     liquids_pointable = false,
 
 	on_place = function(itemstack, placer, pointed_thing)
@@ -646,11 +646,12 @@ minetest.register_craftitem("minekart:kart", {
 		--pointed_pos.y=pointed_pos.y+0.2
 		local kart = minetest.add_entity(pointed_pos, "minekart:kart")
 		if kart and placer then
-            --[[local ent = kart:get_luaentity()
+            local ent = kart:get_luaentity()
             local owner = placer:get_player_name()
-            ent.owner = owner]]--
+            ent.owner = owner
 			kart:set_yaw(placer:get_look_horizontal())
 			itemstack:take_item()
+            ent.object:set_acceleration({x=0,y=mobkit.gravity,z=0})
 		end
 
 		return itemstack
