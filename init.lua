@@ -30,9 +30,9 @@ minekart.colors ={
     yellow='#ffe400',
 }
 
-dofile(minetest.get_modpath("minekart") .. DIR_DELIM .. "minekart_control.lua")
-dofile(minetest.get_modpath("minekart") .. DIR_DELIM .. "minekart_fuel_management.lua")
-dofile(minetest.get_modpath("minekart") .. DIR_DELIM .. "minekart_custom_physics.lua")
+dofile(minetest.get_modpath("kartcar") .. DIR_DELIM .. "minekart_control.lua")
+dofile(minetest.get_modpath("kartcar") .. DIR_DELIM .. "minekart_fuel_management.lua")
+dofile(minetest.get_modpath("kartcar") .. DIR_DELIM .. "minekart_custom_physics.lua")
 
 --
 -- helpers and co.
@@ -100,7 +100,7 @@ function minekart.destroy(self, puncher)
 
     pos.y=pos.y+2
 
-    minetest.add_item({x=pos.x+math.random()-0.5,y=pos.y,z=pos.z+math.random()-0.5},'minekart:kart')
+    minetest.add_item({x=pos.x+math.random()-0.5,y=pos.y,z=pos.z+math.random()-0.5},'kartcar:kart')
 end
 
 
@@ -108,7 +108,7 @@ end
 -- entity
 --
 
-minetest.register_entity('minekart:left_wheel',{
+minetest.register_entity('kartcar:left_wheel',{
 initial_properties = {
 	physical = false,
 	collide_with_objects=false,
@@ -130,7 +130,7 @@ initial_properties = {
 	
 })
 
-minetest.register_entity('minekart:right_wheel',{
+minetest.register_entity('kartcar:right_wheel',{
 initial_properties = {
 	physical = false,
 	collide_with_objects=false,
@@ -152,7 +152,7 @@ initial_properties = {
 	
 })
 
-minetest.register_entity('minekart:steering_wheel_axis',{
+minetest.register_entity('kartcar:steering_wheel_axis',{
 initial_properties = {
 	physical = false,
 	collide_with_objects=false,
@@ -174,7 +174,7 @@ initial_properties = {
 	
 })
 
-minetest.register_entity('minekart:steering_wheel',{
+minetest.register_entity('kartcar:steering_wheel',{
 initial_properties = {
 	physical = false,
 	collide_with_objects=false,
@@ -196,7 +196,7 @@ initial_properties = {
 	
 })
 
-minetest.register_entity('minekart:dir_bar',{
+minetest.register_entity('kartcar:dir_bar',{
 initial_properties = {
 	physical = false,
 	collide_with_objects=false,
@@ -218,7 +218,7 @@ initial_properties = {
 	
 })
 
-minetest.register_entity("minekart:kart", {
+minetest.register_entity("kartcar:kart", {
 	initial_properties = {
 	    physical = true,
         collide_with_objects = true,
@@ -250,7 +250,7 @@ minetest.register_entity("minekart:kart", {
 
     get_staticdata = function(self) -- unloaded/unloads ... is now saved
         return minetest.serialize({
-            --stored_owner = self.owner,
+            stored_owner = self.owner,
             stored_hp = self.hp,
             stored_color = self._color,
             stored_steering = self._steering_angle,
@@ -265,7 +265,7 @@ minetest.register_entity("minekart:kart", {
 	on_activate = function(self, staticdata, dtime_s)
         if staticdata ~= "" and staticdata ~= nil then
             local data = minetest.deserialize(staticdata) or {}
-            --self.owner = data.stored_owner
+            self.owner = data.stored_owner
             self.hp = data.stored_hp
             self._color = data.stored_color
             self._steering_angle = data.stored_steering
@@ -282,27 +282,27 @@ minetest.register_entity("minekart:kart", {
         minekart.paint(self, self._color)
         local pos = self.object:get_pos()
 
-	    local l_wheel=minetest.add_entity(pos,'minekart:left_wheel')
+	    local l_wheel=minetest.add_entity(pos,'kartcar:left_wheel')
 	    l_wheel:set_attach(self.object,'',{x=-6,y=2.1,z=10.7},{x=0,y=0,z=0})
 		-- set the animation once and later only change the speed
         l_wheel:set_animation({x = 1, y = 8}, 0, 0, true)
 	    self.l_wheel = l_wheel
 
-	    local r_wheel=minetest.add_entity(pos,'minekart:right_wheel')
+	    local r_wheel=minetest.add_entity(pos,'kartcar:right_wheel')
 	    r_wheel:set_attach(self.object,'',{x=6,y=2.1,z=10.7},{x=0,y=0,z=0})
 		-- set the animation once and later only change the speed
         r_wheel:set_animation({x = 1, y = 8}, 0, 0, true)
 	    self.r_wheel = r_wheel
 
-        local steering_axis=minetest.add_entity(pos,'minekart:steering_wheel_axis')
+        local steering_axis=minetest.add_entity(pos,'kartcar:steering_wheel_axis')
         steering_axis:set_attach(self.object,'',{x=0,y=7.49,z=7},{x=45,y=0,z=0})
 	    self.steering_axis = steering_axis
 
-	    local steering=minetest.add_entity(self.steering_axis:get_pos(),'minekart:steering_wheel')
+	    local steering=minetest.add_entity(self.steering_axis:get_pos(),'kartcar:steering_wheel')
         steering:set_attach(self.steering_axis,'',{x=0,y=0,z=0},{x=0,y=0,z=0})
 	    self.steering = steering
 
-        local dir_bar=minetest.add_entity(self.object:get_pos(),'minekart:dir_bar')
+        local dir_bar=minetest.add_entity(self.object:get_pos(),'kartcar:dir_bar')
 	    dir_bar:set_attach(self.object,'',{x=0,y=0,z=-4},{x=0,y=0,z=0})
 	    self.dir_bar = dir_bar
 
@@ -490,10 +490,10 @@ minetest.register_entity("minekart:kart", {
 			return
 		end
 		local name = puncher:get_player_name()
-        --[[if self.owner and self.owner ~= name and self.owner ~= "" then return end
+        --[[if self.owner and self.owner ~= name and self.owner ~= "" then return end]]--
         if self.owner == nil then
             self.owner = name
-        end]]--
+        end
         	
         if self.driver_name and self.driver_name ~= name then
 			-- do not allow other players to remove the object while there is a driver
@@ -548,6 +548,7 @@ minetest.register_entity("minekart:kart", {
                     -- end painting
 
 			    else -- deal damage
+                    --minetest.chat_send_all('owner '.. self.owner ..' - name '.. name)
 				    if not self.driver and self.owner == name and toolcaps and toolcaps.damage_groups and toolcaps.damage_groups.fleshy then
                         self.hp = self.hp - 10
                         minetest.sound_play("collision", {
@@ -575,10 +576,10 @@ minetest.register_entity("minekart:kart", {
 		end
 
 		local name = clicker:get_player_name()
-        --[[if self.owner and self.owner ~= name and self.owner ~= "" then return end
+        --[[if self.owner and self.owner ~= name and self.owner ~= "" then return end]]--
         if self.owner == "" then
             self.owner = name
-        end]]--
+        end
 
 		if name == self.driver_name then
             self._engine_running = false
@@ -630,7 +631,7 @@ minetest.register_entity("minekart:kart", {
 --
 
 -- Kart
-minetest.register_craftitem("minekart:kart", {
+minetest.register_craftitem("kartcar:kart", {
 	description = "Kart",
 	inventory_image = "kart_inv.png",
     liquids_pointable = false,
@@ -644,7 +645,7 @@ minetest.register_craftitem("minekart:kart", {
         local node_below = minetest.get_node(pointed_pos).name
         local nodedef = minetest.registered_nodes[node_below]
 		--pointed_pos.y=pointed_pos.y+0.2
-		local kart = minetest.add_entity(pointed_pos, "minekart:kart")
+		local kart = minetest.add_entity(pointed_pos, "kartcar:kart")
 		if kart and placer then
             local ent = kart:get_luaentity()
             local owner = placer:get_player_name()
@@ -664,7 +665,7 @@ minetest.register_craftitem("minekart:kart", {
 
 if minetest.get_modpath("default") then
 	minetest.register_craft({
-		output = "minekart:kart",
+		output = "kartcar:kart",
 		recipe = {
 			{"default:obsidian_block", "default:steel_ingot", "default:obsidian_block"},
 			{"default:steel_ingot",    "default:mese_block",  "default:steel_ingot"},
