@@ -4,7 +4,7 @@
 minekart={}
 minekart.LONGIT_DRAG_FACTOR = 0.16*0.16
 minekart.LATER_DRAG_FACTOR = 30.0
-minekart.gravity = (tonumber(minetest.settings:get("movement_gravity")) or 9.8)
+minekart.gravity = 9.8
 
 --two variables to control sound event
 minekart.last_time_collision_snd = 0
@@ -442,6 +442,7 @@ minetest.register_entity("kartcar:kart", {
         if accel.z > max_factor then accel.z = acc_adjusted end
         if accel.z < -max_factor then accel.z = -acc_adjusted end
         -- end correction
+        accel.y = -minekart.gravity
 
         self.object:set_acceleration(accel)
 
@@ -652,7 +653,7 @@ minetest.register_craftitem("kartcar:kart", {
             ent.owner = owner
 			kart:set_yaw(placer:get_look_horizontal())
 			itemstack:take_item()
-            ent.object:set_acceleration({x=0,y=mobkit.gravity,z=0})
+            ent.object:set_acceleration({x=0,y=-minekart.gravity,z=0})
 		end
 
 		return itemstack
