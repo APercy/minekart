@@ -519,8 +519,8 @@ minetest.register_entity("kartcar:kart", {
         ]]--
         local velocity = self.object:get_velocity()
         local speed = minekart.get_hipotenuse_value(vector.new(), velocity)
-        if is_attached == true and self._engine_running == false and speed <= 0.1 then
-            minekart.loadFuel(self, puncher:get_player_name())
+        if self._engine_running == false and speed <= 0.1 then
+            if minekart.loadFuel(self, puncher:get_player_name()) then return end
         end
         -- end refuel
 
