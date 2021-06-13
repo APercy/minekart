@@ -39,7 +39,6 @@ function minekart.check_road_is_ok(obj)
     else
         return 0
     end
-    return minekart.max_acc_factor
 end
 
 function minekart.kart_control(self, dtime, hull_direction, longit_speed, longit_drag, later_drag, accel)
@@ -48,7 +47,6 @@ function minekart.kart_control(self, dtime, hull_direction, longit_speed, longit
 
 	local player = minetest.get_player_by_name(self.driver_name)
     local retval_accel = accel;
-    local zero = vector.new()
     
 	-- player control
 	if player then
@@ -144,7 +142,9 @@ function minekart.kart_control(self, dtime, hull_direction, longit_speed, longit
                 local factor = 1
                 if self._steering_angle > 0 then factor = -1 end
                 local correction = (steering_limit*(longit_speed/100)) * factor
+                local before_correction = self._steering_angle
                 self._steering_angle = self._steering_angle + correction
+                if math.sign(before_correction) ~= math.sign(self._steering_angle) then self._steering_angle = 0 end
             end
 		end
 

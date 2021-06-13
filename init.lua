@@ -6,6 +6,9 @@ minekart.LONGIT_DRAG_FACTOR = 0.16*0.16
 minekart.LATER_DRAG_FACTOR = 30.0
 minekart.gravity = 9.8
 
+minekart.fuel = {['biofuel:biofuel'] = 1,['biofuel:bottle_fuel'] = 1,
+                ['biofuel:phial_fuel'] = 0.25, ['biofuel:fuel_can'] = 10}
+
 --two variables to control sound event
 minekart.last_time_collision_snd = 0
 minekart.last_time_drift_snd =0
@@ -38,8 +41,6 @@ dofile(minetest.get_modpath("kartcar") .. DIR_DELIM .. "minekart_custom_physics.
 -- helpers and co.
 --
 
-local creative_exists = minetest.global_exists("creative")
-
 function minekart.get_hipotenuse_value(point1, point2)
     return math.sqrt((point1.x - point2.x) ^ 2 + (point1.y - point2.y) ^ 2 + (point1.z - point2.z) ^ 2)
 end
@@ -62,7 +63,7 @@ function minekart.paint(self, colstr)
         self._color = colstr
         local l_textures = self.initial_properties.textures
         for _, texture in ipairs(l_textures) do
-            local i,indx = texture:find('kart_painting.png')
+            local indx = texture:find('kart_painting.png')
             if indx then
                 l_textures[_] = "kart_painting.png^[multiply:".. colstr
             end
@@ -227,7 +228,10 @@ minetest.register_entity("kartcar:kart", {
         stepheight = 0.5,
 	    visual = "mesh",
 	    mesh = "kart_body.b3d",
-        textures = {"kart_black.png", "kart_painting.png", "kart_painting.png", "kart_red.png", "kart_black.png", "kart_white.png", "kart_black.png", "kart_black.png", "kart_black.png", "kart_black.png", "kart_metal.png", "kart_black.png", "kart_black.png", "kart_metal.png", "kart_black.png",  "kart_metal.png",},
+        textures = {"kart_black.png", "kart_painting.png", "kart_painting.png",
+            "kart_red.png", "kart_black.png", "kart_white.png", "kart_black.png",
+            "kart_black.png", "kart_black.png", "kart_black.png", "kart_metal.png",
+            "kart_black.png", "kart_black.png", "kart_metal.png", "kart_black.png", "kart_metal.png",},
     },
     textures = {},
 	driver_name = nil,
@@ -320,14 +324,10 @@ minetest.register_entity("kartcar:kart", {
         if minekart.last_time_drift_snd > 1 then minekart.last_time_drift_snd = 1 end
         --[[end sound control]]--
 
-        local accel_y = self.object:get_acceleration().y
         local rotation = self.object:get_rotation()
         local yaw = rotation.y
 		local newyaw=yaw
         local pitch = rotation.x
-        local newpitch = pitch
-		local roll = rotation.z
-		local newroll=roll
 
         local hull_direction = minetest.yaw_to_dir(yaw)
         local nhdir = {x=hull_direction.z,y=0,z=-hull_direction.x}		-- lateral unit vector
@@ -335,10 +335,12 @@ minetest.register_entity("kartcar:kart", {
 
         local longit_speed = minekart.dot(velocity,hull_direction)
         local fuel_weight_factor = (5 - self._energy)/5000
-        local longit_drag = vector.multiply(hull_direction,(longit_speed*longit_speed) * (minekart.LONGIT_DRAG_FACTOR - fuel_weight_factor) * -1 * minekart.sign(longit_speed))
+        local longit_drag = vector.multiply(hull_direction,(longit_speed*longit_speed) *
+            (minekart.LONGIT_DRAG_FACTOR - fuel_weight_factor) * -1 * minekart.sign(longit_speed))
         
 		local later_speed = minekart.dot(velocity,nhdir)
-        local later_drag = vector.multiply(nhdir,later_speed*later_speed*minekart.LATER_DRAG_FACTOR*-1*minekart.sign(later_speed))
+        local later_drag = vector.multiply(nhdir,later_speed*
+            later_speed*minekart.LATER_DRAG_FACTOR*-1*minekart.sign(later_speed))
 
         local accel = vector.add(longit_drag,later_drag)
 
@@ -355,11 +357,12 @@ minetest.register_entity("kartcar:kart", {
 
                 --reload fuel at refuel point
                 ------------------------------
-                if self._energy < 0.90 then
+                if self._energy < 1 then
                     local speed = minekart.get_hipotenuse_value(vector.new(), self.lastvelocity)
                     local pos = self.object:get_pos()
-                    if minetest.find_node_near(pos, 5, {"checkpoints:refuel"}) ~= nil and self._engine_running == false and speed <= 0.1 then
-                        minekart_load_fuel(self, self.driver_name, true)
+                    if minetest.find_node_near(pos, 5, {"checkpoints:refuel"}) ~= nil and
+                            self._engine_running == false and speed <= 0.1 then
+                        minekart.loadFuel(self, self.driver_name, true)
                     end
                 end
             end
@@ -382,12 +385,13 @@ minetest.register_entity("kartcar:kart", {
                     })
                 end
                 --[[if self.damage > 100 then --if acumulated damage is greater than 100, adieu
-                    minekart.destroy(self)   
+                    minekart.destroy(self)
                 end]]--
             end
 
             local min_later_speed = 0.9
-            if (later_speed > min_later_speed or later_speed < -min_later_speed) and minekart.last_time_drift_snd > 0.6 then
+            if (later_speed > min_later_speed or later_speed < -min_later_speed) and
+                    minekart.last_time_drift_snd > 0.6 then
                 minekart.last_time_drift_snd = 0
                 minetest.sound_play("drifting", {
                     to_player = self.driver_name,
@@ -419,16 +423,17 @@ minetest.register_entity("kartcar:kart", {
         self.dir_bar:set_attach(self.object,'',{x=(-1*(self._steering_angle / 25)),y=0,z=-4},{x=0,y=0,z=0})
         self.r_wheel:set_attach(self.object,'',{x= 6,y=2.1,z=10.7},{x=0,y=-self._steering_angle+angle_factor,z=0})
 
-		if math.abs(self._steering_angle)>5 then 
+		if math.abs(self._steering_angle)>5 then
             local turn_rate = math.rad(60)
-			newyaw = yaw + dtime*(1 - 1 / (math.abs(longit_speed) + 1)) * self._steering_angle / 30 * turn_rate * minekart.sign(longit_speed)
+			newyaw = yaw + dtime*(1 - 1 / (math.abs(longit_speed) + 1)) *
+                self._steering_angle / 30 * turn_rate * minekart.sign(longit_speed)
 		end
 
         --[[if player and is_attached then
             player:set_look_horizontal(newyaw)
         end]]--
 
-		newpitch = velocity.y * math.rad(6)
+		local newpitch = velocity.y * math.rad(6)
 
         --[[
         accell correction
@@ -514,9 +519,8 @@ minetest.register_entity("kartcar:kart", {
         ]]--
         local velocity = self.object:get_velocity()
         local speed = minekart.get_hipotenuse_value(vector.new(), velocity)
-        if is_attached == true and item_name == "biofuel:biofuel" and self._engine_running == false and speed <= 0.1 then
-            local pos = self.object:get_pos()
-            minekart_load_fuel(self, puncher:get_player_name())
+        if is_attached == true and self._engine_running == false and speed <= 0.1 then
+            minekart.loadFuel(self, puncher:get_player_name())
         end
         -- end refuel
 
@@ -550,7 +554,8 @@ minetest.register_entity("kartcar:kart", {
 
 			    else -- deal damage
                     --minetest.chat_send_all('owner '.. self.owner ..' - name '.. name)
-				    if not self.driver and self.owner == name and toolcaps and toolcaps.damage_groups and toolcaps.damage_groups.fleshy then
+				    if not self.driver and self.owner == name and toolcaps and
+                            toolcaps.damage_groups and toolcaps.damage_groups.fleshy then
                         self.hp = self.hp - 10
                         minetest.sound_play("collision", {
 	                        object = self.object,
@@ -643,8 +648,6 @@ minetest.register_craftitem("kartcar:kart", {
 		end
         
         local pointed_pos = pointed_thing.above
-        local node_below = minetest.get_node(pointed_pos).name
-        local nodedef = minetest.registered_nodes[node_below]
 		--pointed_pos.y=pointed_pos.y+0.2
 		local kart = minetest.add_entity(pointed_pos, "kartcar:kart")
 		if kart and placer then

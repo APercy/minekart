@@ -2,25 +2,41 @@
 -- fuel
 --
 
-function minekart_load_fuel(self, player_name, free)
+function minekart.contains(table, val)
+    for k,v in pairs(table) do
+        if k == val then
+            return v
+        end
+    end
+    return false
+end
+
+function minekart.loadFuel(self, player_name, free)
     free = free or false
-    if self._energy < 0.90 then 
+    if self._energy < 1 then
         local player = minetest.get_player_by_name(player_name)
         local inv = player:get_inventory()
-        local inventory_fuel = "biofuel:biofuel"
 
-        if inv:contains_item("main", inventory_fuel) or free == true then
-            if free == false then
-                local stack = ItemStack(inventory_fuel .. " 1")
-                local taken = inv:remove_item("main", stack)
+        local itmstck=player:get_wielded_item()
+        local item_name = ""
+        if itmstck then item_name = itmstck:get_name() end
+
+        local fuel = minekart.contains(minekart.fuel, item_name)
+        if fuel or free == true then
+            local stack = ItemStack(item_name .. " 1")
+            if self._energy < 1 then
+                if free == false then inv:remove_item("main", stack) end
+                self._energy = self._energy + fuel
+                if self._energy > 1 then self._energy = 1 end
+                minekart.last_fuel_display = 0
+                if self._energy == 1 then minetest.chat_send_player(player_name, "Full tank!") end
             end
-
-	        self._energy = self._energy + 1
-            if self._energy > 1 then self._energy = 1 end
-            minekart.last_fuel_display = 0
-            minetest.chat_send_player(player_name, "Full tank!")
-	    end
+            
+            return true
+        end
     else
-        minetest.chat_send_player(player_name, "No refuel for you! You have more than 90% of fuel in the tank.")
+        minetest.chat_send_player(player_name, "No refuel for you! Your tank is already full.")
     end
+
+    return false
 end
