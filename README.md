@@ -1,4 +1,4 @@
-Minetest 5.2 mod: MineKart
+Minetest 5.2 mod: Kart Car
 ========================================
 
 This is a kart car, a mod that provides a little race car. 
@@ -9,7 +9,7 @@ To refuel you need stop, turn the engine off and punch the gallon against the ka
 
 arrows to control acceleration, brake, direction.
 shift to go backwards
-E key to torn the engine on
+E key to turn the engine on
 
 -----------------------
 It uses some code from Sailing Kit (by TheTermos)
