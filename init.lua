@@ -495,6 +495,7 @@ minetest.register_entity("kartcar:kart", {
 		if not puncher or not puncher:is_player() then
 			return
 		end
+
 		local name = puncher:get_player_name()
         --[[if self.owner and self.owner ~= name and self.owner ~= "" then return end]]--
         if self.owner == nil then
@@ -553,8 +554,11 @@ minetest.register_entity("kartcar:kart", {
                     -- end painting
 
 			    else -- deal damage
+
+                    local is_admin = false
+                    is_admin = minetest.check_player_privs(puncher, {server=true})
                     --minetest.chat_send_all('owner '.. self.owner ..' - name '.. name)
-				    if not self.driver and self.owner == name and toolcaps and
+				    if not self.driver and (self.owner == name or is_admin == true) and toolcaps and
                             toolcaps.damage_groups and toolcaps.damage_groups.fleshy then
                         self.hp = self.hp - 10
                         minetest.sound_play("collision", {
