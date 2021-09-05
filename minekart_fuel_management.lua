@@ -26,7 +26,11 @@ function minekart.loadFuel(self, player_name, free)
         local stack = ItemStack(item_name .. " 1")
         if self._energy < 1 then
             if free == false then inv:remove_item("main", stack) end
-            self._energy = self._energy + fuel
+            if fuel then
+                self._energy = self._energy + fuel
+            else
+                self._energy = 1
+            end
             if self._energy > 1 then self._energy = 1 end
             minekart.last_fuel_display = 0
             if self._energy == 1 then minetest.chat_send_player(player_name, "Full tank!") end
