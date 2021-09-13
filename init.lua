@@ -83,9 +83,11 @@ function minekart.destroy(self, puncher)
         -- detach the driver first (puncher must be driver)
         puncher:set_detach()
         puncher:set_eye_offset({x = 0, y = 0, z = 0}, {x = 0, y = 0, z = 0})
-        player_api.player_attached[self.driver_name] = nil
-        -- player should stand again
-        player_api.set_animation(puncher, "stand")
+        if minetest.global_exists("player_api") then
+            player_api.player_attached[self.driver_name] = nil
+            -- player should stand again
+            player_api.set_animation(puncher, "stand")
+        end
         self.driver_name = nil
     end
 
@@ -539,11 +541,22 @@ minetest.register_entity("kartcar:kart", {
                 end
 
                 --painting
-			    local _,indx = item_name:find('dye:')
-			    if indx then
+                local split = string.split(item_name, ":")
+                local color
+                local _,indx = split[1]:find('dye')
+                if indx then
+                    for clr,_ in pairs(minekart.colors) do
+                        local _,x = split[2]:find(clr)
+                        if x then color = clr end
+                    end
+                else
+                    color = false
+                end
+                    
+			    if color then
 
                     --lets paint!!!!
-				    local color = item_name:sub(indx+1)
+				    --local color = item_name:sub(indx+1)
 				    local colstr = minekart.colors[color]
                     --minetest.chat_send_all(color ..' '.. dump(colstr))
 				    if colstr then
@@ -606,9 +619,11 @@ minetest.register_entity("kartcar:kart", {
 
             -- detach the player
 		    clicker:set_detach()
-		    player_api.player_attached[name] = nil
-		    clicker:set_eye_offset({x=0,y=0,z=0},{x=0,y=0,z=0})
-		    player_api.set_animation(clicker, "stand")
+            clicker:set_eye_offset({x=0,y=0,z=0},{x=0,y=0,z=0})
+            if minetest.global_exists("player_api") then
+                player_api.player_attached[name] = nil
+                player_api.set_animation(clicker, "stand")
+            end
 		    self.driver = nil
             self.object:set_acceleration(vector.multiply(minekart.vector_up, -minekart.gravity))
         
@@ -623,11 +638,13 @@ minetest.register_entity("kartcar:kart", {
 	        -- attach the driver
 	        clicker:set_attach(self.object, "", {x = 0, y = 3, z = 2}, {x = 0, y = 0, z = 0})
 	        clicker:set_eye_offset({x = 0, y = 0, z = 2.5}, {x = 0, y = 0, z = -14})
-	        player_api.player_attached[name] = true
+            if minetest.global_exists("player_api") then
+	            player_api.player_attached[name] = true
+            end
 	        -- make the driver sit
 	        minetest.after(0.2, function()
 		        local player = minetest.get_player_by_name(name)
-		        if player then
+		        if player and minetest.global_exists("player_api") then
 			        player_api.set_animation(player, "sit")
 		        end
 	        end)

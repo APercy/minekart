@@ -6,7 +6,6 @@ globals = {
     "mobkit",
     "core",
     "player_api",
-    "player_monoids",
     "math.sign",
 }
 
