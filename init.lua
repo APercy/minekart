@@ -542,8 +542,8 @@ minetest.register_entity("kartcar:kart", {
 
                 --painting
                 local split = string.split(item_name, ":")
-                local color
-                local _,indx = split[1]:find('dye')
+                local color, indx, _
+                if split[1] then _,indx = split[1]:find('dye') end
                 if indx then
                     for clr,_ in pairs(minekart.colors) do
                         local _,x = split[2]:find(clr)
