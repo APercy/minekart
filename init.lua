@@ -5,6 +5,7 @@ minekart={}
 minekart.LONGIT_DRAG_FACTOR = 0.16*0.16
 minekart.LATER_DRAG_FACTOR = 30.0
 minekart.gravity = 9.8
+minekart.is_creative = minetest.settings:get_bool("creative_mode", false)
 
 minekart.fuel = {['biofuel:biofuel'] = 1,['biofuel:bottle_fuel'] = 1,
                 ['biofuel:phial_fuel'] = 0.25, ['biofuel:fuel_can'] = 10}
@@ -460,7 +461,7 @@ minetest.register_entity("kartcar:kart", {
 
         -- calculate energy consumption --
         ----------------------------------
-        if self._energy > 0 and self._engine_running then
+        if self._energy > 0 and self._engine_running and not minekart.is_creative then
             local zero_reference = vector.new()
             local acceleration = minekart.get_hipotenuse_value(accel, zero_reference)
             local consumed_power = acceleration/200000
