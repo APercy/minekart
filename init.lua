@@ -647,6 +647,12 @@ minetest.register_entity("kartcar:kart", {
 		        local player = minetest.get_player_by_name(name)
 		        if player and minetest.global_exists("player_api") then
 			        player_api.set_animation(player, "sit")
+
+				    self._engine_running = true
+		            -- sound and animation
+	                self.sound_handle = minetest.sound_play({name = "engine"},
+			                {object = self.object, gain = 2.0, pitch = 1.0, max_hear_distance = 32, loop = true,})
+
 		        end
 	        end)
 	        self.object:set_acceleration(vector.multiply(minekart.vector_up, -minekart.gravity))
