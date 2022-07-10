@@ -73,6 +73,25 @@ function minekart.paint(self, colstr)
     end
 end
 
+--returns 0 for old, 1 for new
+function minekart.detect_player_api(player)
+    local player_proterties = player:get_properties()
+    local mesh = "character.b3d"
+    if player_proterties.mesh == mesh or player_proterties.mesh == "max.b3d" then
+        local models = player_api.registered_models
+        local character = models[mesh]
+        if character then
+            if character.animations.sit.eye_height then
+                return 1
+            else
+                return 0
+            end
+        end
+    end
+
+    return 0
+end
+
 -- destroy the kart
 function minekart.destroy(self, puncher)
     if self.sound_handle then
@@ -638,7 +657,12 @@ minetest.register_entity("kartcar:kart", {
 
 	        -- attach the driver
 	        clicker:set_attach(self.object, "", {x = 0, y = 3, z = 2}, {x = 0, y = 0, z = 0})
-	        clicker:set_eye_offset({x = 0, y = 0, z = 2.5}, {x = 0, y = 0, z = -14})
+            local eye_y = 0
+            if minekart.detect_player_api(clicker) == 1 then
+                eye_y = 4.5
+            end
+
+	        clicker:set_eye_offset({x = 0, y = eye_y, z = 2.5}, {x = 0, y = eye_y, z = -14})
             if minetest.global_exists("player_api") then
 	            player_api.player_attached[name] = true
             end
