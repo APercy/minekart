@@ -92,6 +92,28 @@ function minekart.detect_player_api(player)
     return 0
 end
 
+function minekart.engine_set_sound_and_animation(self, _longit_speed)
+    --minetest.chat_send_all('test1 ' .. dump(self._engine_running) )
+    if self.sound_handle then
+        if (math.abs(self._longit_speed) > math.abs(_longit_speed) + 0.08) or (math.abs(self._longit_speed) + 0.08 < math.abs(_longit_speed)) then
+            --minetest.chat_send_all('test2')
+            minekart.engineSoundPlay(self)
+        end
+    end
+end
+
+function minekart.engineSoundPlay(self)
+    --sound
+    if self.sound_handle then minetest.sound_stop(self.sound_handle) end
+    if self.object then
+        self.sound_handle = minetest.sound_play({name = "engine"},
+            {object = self.object, gain = 0.5,
+                pitch = 0.6 + ((self._longit_speed/10)/2),
+                max_hear_distance = 10,
+                loop = true,})
+    end
+end
+
 -- destroy the kart
 function minekart.destroy(self, puncher)
     if self.sound_handle then
@@ -273,6 +295,7 @@ minetest.register_entity("kartcar:kart", {
     _total_laps = -1,
     _race_id = "",
     _energy = 1,
+    _longit_speed = 0,
 
     get_staticdata = function(self) -- unloaded/unloads ... is now saved
         return minetest.serialize({
@@ -471,7 +494,10 @@ minetest.register_entity("kartcar:kart", {
         -- end correction
         accel.y = -minekart.gravity
 
+        minekart.engine_set_sound_and_animation(self, longit_speed)
+
         self.object:set_acceleration(accel)
+        self._longit_speed = longit_speed
 
 		if newyaw~=yaw or newpitch~=pitch then self.object:set_rotation({x=newpitch,y=newyaw,z=0}) end
 
@@ -675,7 +701,7 @@ minetest.register_entity("kartcar:kart", {
 				    self._engine_running = true
 		            -- sound and animation
 	                self.sound_handle = minetest.sound_play({name = "engine"},
-			                {object = self.object, gain = 2.0, pitch = 1.0, max_hear_distance = 32, loop = true,})
+			                {object = self.object, gain = 2.0, pitch = 0.5, max_hear_distance = 32, loop = true,})
 
 		        end
 	        end)
