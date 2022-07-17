@@ -434,7 +434,7 @@ minetest.register_entity("kartcar:kart", {
                 end]]--
             end
 
-            local min_later_speed = 0.9
+            local min_later_speed = 1.5
             if (later_speed > min_later_speed or later_speed < -min_later_speed) and
                     minekart.last_time_drift_snd > 0.6 then
                 minekart.last_time_drift_snd = 0
