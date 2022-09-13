@@ -466,9 +466,9 @@ minetest.register_entity("kartcar:kart", {
         self.r_wheel:set_animation_frame_speed(longit_speed * (10 + angle_factor))
 
         self.steering:set_attach(self.steering_axis,'',{x=0,y=0,z=0},{x=0,y=0,z=self._steering_angle*2})
-        self.l_wheel:set_attach(self.object,'',{x=-6,y=2.1,z=10.7},{x=0,y=-self._steering_angle-angle_factor,z=0})
+        self.l_wheel:set_attach(self.object,'',{x=-6,y=2.1,z=10.7},{x=0,y=-self._steering_angle,z=0})
         self.dir_bar:set_attach(self.object,'',{x=(-1*(self._steering_angle / 25)),y=0,z=-4},{x=0,y=0,z=0})
-        self.r_wheel:set_attach(self.object,'',{x= 6,y=2.1,z=10.7},{x=0,y=-self._steering_angle+angle_factor,z=0})
+        self.r_wheel:set_attach(self.object,'',{x= 6,y=2.1,z=10.7},{x=0,y=-self._steering_angle,z=0})
 
 		if math.abs(self._steering_angle)>5 then
             local turn_rate = math.rad(60)
