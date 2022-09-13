@@ -674,12 +674,21 @@ minetest.register_entity("kartcar:kart", {
             if minetest.global_exists("player_api") then
 	            player_api.player_attached[name] = true
             end
+            player_api.set_animation(clicker, "sit")
+
 	        -- make the driver sit
 	        minetest.after(0.2, function()
 		        local player = minetest.get_player_by_name(name)
 		        if player and minetest.global_exists("player_api") then
-			        player_api.set_animation(player, "sit")
-
+                    local speed = 30.01
+                    local mesh = player:get_properties().mesh
+                    if mesh then
+                        local character = player_api.registered_models[mesh]
+                        if character and character.animation_speed then
+                            speed = character.animation_speed + 0.01
+                        end
+                    end
+                    player_api.set_animation(player, "sit", speed)
 				    self._engine_running = true
 		            -- sound and animation
 	                self.sound_handle = minetest.sound_play({name = "engine"},
