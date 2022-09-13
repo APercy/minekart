@@ -34,6 +34,7 @@ minekart.colors ={
     yellow='#ffe400',
 }
 
+dofile(minetest.get_modpath("kartcar") .. DIR_DELIM .. "minekart_forms.lua")
 dofile(minetest.get_modpath("kartcar") .. DIR_DELIM .. "minekart_control.lua")
 dofile(minetest.get_modpath("kartcar") .. DIR_DELIM .. "minekart_fuel_management.lua")
 dofile(minetest.get_modpath("kartcar") .. DIR_DELIM .. "minekart_custom_physics.lua")
@@ -296,6 +297,7 @@ minetest.register_entity("kartcar:kart", {
     _race_id = "",
     _energy = 1,
     _longit_speed = 0,
+    _intensity = 2,
 
     get_staticdata = function(self) -- unloaded/unloads ... is now saved
         return minetest.serialize({
@@ -651,28 +653,8 @@ minetest.register_entity("kartcar:kart", {
         end
 
 		if name == self.driver_name then
-            self._engine_running = false
-
-			-- driver clicked the object => driver gets off the vehicle
-			self.driver_name = nil
-			-- sound and animation
-            if self.sound_handle then
-                minetest.sound_stop(self.sound_handle)
-                self.sound_handle = nil
-            end
-			
-			self.object:set_animation_frame_speed(0)
-
-            -- detach the player
-		    clicker:set_detach()
-            clicker:set_eye_offset({x=0,y=0,z=0},{x=0,y=0,z=0})
-            if minetest.global_exists("player_api") then
-                player_api.player_attached[name] = nil
-                player_api.set_animation(clicker, "stand")
-            end
-		    self.driver = nil
-            self.object:set_acceleration(vector.multiply(minekart.vector_up, -minekart.gravity))
-        
+            minekart.driver_formspec(name)
+       
 		elseif not self.driver_name then
 	        -- no driver => clicker is new driver
 	        self.driver_name = name

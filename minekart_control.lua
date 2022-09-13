@@ -41,6 +41,29 @@ function minekart.check_road_is_ok(obj)
     end
 end
 
+function minekart.set_yaw_by_mouse(self, dir, steering_limit)
+    local rotation = self.object:get_rotation()
+    local rot_y = math.deg(rotation.y)
+    
+    local total = math.abs(math.floor(rot_y/360))
+
+    if rot_y < 0 then rot_y = rot_y + (360*total) end
+    if rot_y > 360 then rot_y = rot_y - (360*total) end
+    if rot_y >= 270 and dir <= 90 then dir = dir + 360 end
+    if rot_y <= 90 and dir >= 270 then dir = dir - 360 end
+
+    local intensity = 2
+    if self._intensity then intensity = self._intensity end
+    local command = (rot_y - dir) * intensity
+    if command < -90 then command = -90 
+    elseif command > 90 then command = 90 end
+    --minetest.chat_send_all("rotation y: "..rot_y.." - dir: "..dir.." - command: "..(rot_y - dir))
+
+    --minetest.chat_send_all("rotation y: "..rot_y.." - dir: "..dir.." - command: "..command)
+
+	return (-command * steering_limit)/90
+end
+
 function minekart.kart_control(self, dtime, hull_direction, longit_speed, longit_drag, later_drag, accel)
     minekart.karttest_last_time_command = minekart.karttest_last_time_command + dtime
     if minekart.karttest_last_time_command > 1 then minekart.karttest_last_time_command = 1 end
@@ -136,23 +159,29 @@ function minekart.kart_control(self, dtime, hull_direction, longit_speed, longit
             end
 		end
 
-		-- steering
         local steering_limit = 30
-		if ctrl.right then
-			self._steering_angle = math.max(self._steering_angle-80*dtime,-steering_limit)
-		elseif ctrl.left then
-			self._steering_angle = math.min(self._steering_angle+80*dtime,steering_limit)
+        local yaw_cmd = 0
+        if self._yaw_by_mouse == true then
+		    local rot_y = math.deg(player:get_look_horizontal())
+            self._steering_angle = minekart.set_yaw_by_mouse(self, rot_y, steering_limit)
         else
-            --center steering
-            if longit_speed > 0 then
-                local factor = 1
-                if self._steering_angle > 0 then factor = -1 end
-                local correction = (steering_limit*(longit_speed/100)) * factor
-                local before_correction = self._steering_angle
-                self._steering_angle = self._steering_angle + correction
-                if math.sign(before_correction) ~= math.sign(self._steering_angle) then self._steering_angle = 0 end
-            end
-		end
+		    -- steering
+		    if ctrl.right then
+			    self._steering_angle = math.max(self._steering_angle-80*dtime,-steering_limit)
+		    elseif ctrl.left then
+			    self._steering_angle = math.min(self._steering_angle+80*dtime,steering_limit)
+            else
+                --center steering
+                if longit_speed > 0 then
+                    local factor = 1
+                    if self._steering_angle > 0 then factor = -1 end
+                    local correction = (steering_limit*(longit_speed/100)) * factor
+                    local before_correction = self._steering_angle
+                    self._steering_angle = self._steering_angle + correction
+                    if math.sign(before_correction) ~= math.sign(self._steering_angle) then self._steering_angle = 0 end
+                end
+		    end
+        end
 
         local angle_factor = self._steering_angle / 60
         if angle_factor < 0 then angle_factor = angle_factor * -1 end
