@@ -297,7 +297,7 @@ minetest.register_entity("kartcar:kart", {
     _race_id = "",
     _energy = 1,
     _longit_speed = 0,
-    _intensity = 2,
+    _intensity = 4,
 
     get_staticdata = function(self) -- unloaded/unloads ... is now saved
         return minetest.serialize({
