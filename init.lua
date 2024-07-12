@@ -124,12 +124,14 @@ function minekart.destroy(self, puncher)
 
     if self.driver_name then
         -- detach the driver first (puncher must be driver)
-        puncher:set_detach()
-        puncher:set_eye_offset({x = 0, y = 0, z = 0}, {x = 0, y = 0, z = 0})
+        if puncher then
+            puncher:set_detach()
+            puncher:set_eye_offset({x = 0, y = 0, z = 0}, {x = 0, y = 0, z = 0})
+        end
         if minetest.global_exists("player_api") then
             player_api.player_attached[self.driver_name] = nil
             -- player should stand again
-            player_api.set_animation(puncher, "stand")
+            if puncher then player_api.set_animation(puncher, "stand") end
         end
         self.driver_name = nil
     end
