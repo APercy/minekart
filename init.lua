@@ -74,22 +74,31 @@ function minekart.paint(self, colstr)
     end
 end
 
+minekart.has_3darmor = false
+if core.get_modpath("3d_armor") then
+    minekart.has_3darmor = true
+end
+
 --returns 0 for old, 1 for new
 function minekart.detect_player_api(player)
     local player_proterties = player:get_properties()
     local mesh = "character.b3d"
-    if player_proterties.mesh == mesh or player_proterties.mesh == "max.b3d" then
+    if player_proterties.mesh == mesh then
         local models = player_api.registered_models
         local character = models[mesh]
         if character then
-            if character.animations.sit.eye_height then
+            if character.animations.sit.eye_height or minekart.has_3darmor then
+                --core.chat_send_all("new")
                 return 1
             else
+                --core.chat_send_all("old")
                 return 0
             end
         end
     end
-
+    
+    if minekart.has_3darmor then return 1 end
+    
     return 0
 end
 
@@ -172,6 +181,12 @@ function minekart.destroy(self, puncher)
     minetest.add_item({x=pos.x+math.random()-0.5,y=pos.y,z=pos.z+math.random()-0.5},'kartcar:kart')]]--
 end
 
+function checkIsFinite(mynumber)
+    if math.isfinite(mynumber) then
+        return mynumber
+    end
+    return 0
+end
 
 --
 -- entity
@@ -505,13 +520,18 @@ minetest.register_entity("kartcar:kart", {
 
 		local newpitch = velocity.y * math.rad(6)
 
+        --if it's not NaN, add accel
+        accel.x = checkIsFinite(accel.x)
+        accel.y = checkIsFinite(accel.y)
+        accel.z = checkIsFinite(accel.z)
+
         --[[
         accell correction
         under some circunstances the acceleration exceeds the max value accepted by set_acceleration and
         the game crashes with an overflow, so limiting the max acceleration in each axis prevents the crash
         ]]--
         local max_factor = 25
-        local acc_adjusted = 10
+        local acc_adjusted = 0
         if accel.x > max_factor then accel.x = acc_adjusted end
         if accel.x < -max_factor then accel.x = -acc_adjusted end
         if accel.z > max_factor then accel.z = acc_adjusted end
@@ -688,9 +708,10 @@ minetest.register_entity("kartcar:kart", {
 
 	        -- attach the driver
 	        clicker:set_attach(self.object, "", {x = 0, y = 3, z = 2}, {x = 0, y = 0, z = 0})
+            local eye_height_plus_value = 6.5
             local eye_y = 0
-            if minekart.detect_player_api(clicker) == 1 then
-                eye_y = 4.5
+            if minekart.detect_player_api(clicker) > 0 then
+                eye_y = eye_y + eye_height_plus_value
             end
 
 	        clicker:set_eye_offset({x = 0, y = eye_y, z = 2.5}, {x = 0, y = eye_y, z = -14})
