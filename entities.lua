@@ -208,7 +208,7 @@ minekart.car_properties1 = {
     _trunk_slots = 0,
     _engine_sound = "kart_engine",
     _horn_sound = '',
-    _base_pitch = 0.7,
+    _base_pitch = 0.2,
     _max_fuel = 5,
 
     _vehicle_name = "Kart",
@@ -225,15 +225,16 @@ minekart.car_properties1 = {
     _rear_wheel_ent = 'kartcar:r_wheel',
     _rear_wheel_xpos = 8.2,
     _rear_wheel_frames = {x = 1, y = 11},
-    _wheel_compensation = 0.9,
+    _wheel_compensation = 1.1,
 
+    _have_transmission = false,
     _transmission_state = 1,
 
     _LONGIT_DRAG_FACTOR = 0.16*0.16,
-    _LATER_DRAG_FACTOR = 30.0,
+    _LATER_DRAG_FACTOR = 15,
     _max_acc_factor = 8,
     _max_speed = 25,
-    _min_later_speed = 1.5,
+    _min_later_speed = 3.5,
     _consumption_divisor = 60000,
 
     get_staticdata = automobiles_lib.get_staticdata,
